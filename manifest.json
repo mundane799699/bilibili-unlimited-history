@@ -2,11 +2,11 @@
   "manifest_version": 3,
   "name": "Bilibili Unlimited History",
   "version": "1.0",
-  "description": "无限保存 Bilibili 历史记录",
-  "permissions": ["storage", "cookies", "tabs", "alarms"],
+  "description": "View your Bilibili history without limitations",
+  "permissions": ["storage", "tabs", "cookies", "alarms"],
   "host_permissions": ["*://*.bilibili.com/*"],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "popup/index.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -14,12 +14,13 @@
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background/index.js",
+    "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["https://*.bilibili.com/*"],
-      "js": ["content.js"]
+      "matches": ["*://*.bilibili.com/*"],
+      "js": ["content/index.js"]
     }
   ],
   "icons": {

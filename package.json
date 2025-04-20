@@ -1,0 +1,31 @@
+{
+  "name": "bilibili-unlimited-history",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc -b && vite build --watch && copy manifest.json dist\\ && xcopy /E /I /Y icons dist\\icons && copy src\\popup\\index.html dist\\popup\\ && copy src\\history\\index.html dist\\history\\",
+    "build": "tsc -b && vite build && copy manifest.json dist\\ && xcopy /E /I /Y icons dist\\icons && copy src\\popup\\index.html dist\\popup\\ && copy src\\history\\index.html dist\\history\\",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@types/chrome": "^0.0.315",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@types/node": "^22.14.1",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.26.1",
+    "vite": "^6.3.1"
+  }
+}
