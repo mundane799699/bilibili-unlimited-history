@@ -73,7 +73,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           console.log("lastSync", lastSync);
           await syncHistory(false);
           // 如果已经有同步记录，直接返回成功
-          sendResponse({ success: true, message: "已有同步记录" });
+          sendResponse({ success: true, message: "增量同步成功" });
         } else {
           // 如果没有同步记录，执行全量同步
           await syncHistory(true);
