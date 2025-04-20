@@ -21,13 +21,6 @@ export default defineConfig({
         // 修改输出路径，直接输出到 dist 根目录
         entryFileNames: "[name]/index.js",
         chunkFileNames: "chunks/[name].[hash].js",
-        assetFileNames: (assetInfo) => {
-          if (!assetInfo.name) return "assets/[name].[ext]";
-          if (/\.(html)$/.test(assetInfo.name)) {
-            return `[name]/[name][extname]`;
-          }
-          return `assets/[name].[ext]`;
-        },
       },
     },
     outDir: "dist",
