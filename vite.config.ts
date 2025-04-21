@@ -21,6 +21,12 @@ export default defineConfig({
         // 修改输出路径，直接输出到 dist 根目录
         entryFileNames: "[name]/index.js",
         chunkFileNames: "chunks/[name].[hash].js",
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === "style.css") {
+            return "assets/index.css";
+          }
+          return "assets/[name].[hash][extname]";
+        },
       },
     },
     outDir: "dist",
