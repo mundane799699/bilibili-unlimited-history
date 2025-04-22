@@ -1,39 +1,72 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { HistoryItem } from "../components/HistoryItem";
 import { getHistory } from "../utils/db";
 import { HistoryItem as HistoryItemType } from "../types";
+import ScrollToTopButton from "../components/ScrollToTopButton";
 
 export const History: React.FC = () => {
   const [history, setHistory] = useState<HistoryItemType[]>([]);
   const [searchText, setSearchText] = useState("");
-  const [showBackToTop, setShowBackToTop] = useState(false);
+  const currentPageRef = useRef(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const isLoadingRef = useRef<boolean>(false);
 
-  useEffect(() => {
-    loadHistory();
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // 使用useCallback记忆化loadHistory函数
+  const loadHistory = useCallback(async (page: number = 0) => {
+    console.log("loadHistory");
+    if (isLoadingRef.current) return;
 
-  const loadHistory = async () => {
     try {
-      const data = await getHistory();
-      setHistory(data.sort((a, b) => b.viewTime - a.viewTime));
+      setIsLoading(true);
+      isLoadingRef.current = true;
+      const { items, hasMore } = await getHistory(page);
+
+      if (page === 0) {
+        setHistory(items);
+      } else {
+        setHistory((prev) => [...prev, ...items]);
+      }
+
+      currentPageRef.current = currentPageRef.current + 1;
+      setHasMore(hasMore);
     } catch (error) {
       console.error("Failed to load history:", error);
+    } finally {
+      setIsLoading(false);
+      isLoadingRef.current = false;
     }
-  };
+  }, []); // 空依赖数组，因为所有依赖都使用了ref
 
-  const handleScroll = () => {
-    setShowBackToTop(window.scrollY > 300);
-  };
+  useEffect(() => {
+    loadHistory(0);
+  }, [loadHistory]);
 
-  const handleBackToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  useEffect(() => {
+    const options = {
+      threshold: 0.1,
+      rootMargin: "20px",
+    };
+    // 设置Intersection Observer
+    observerRef.current = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && hasMore && !isLoadingRef.current) {
+        loadHistory(currentPageRef.current);
+      }
+    }, options);
 
-  const filteredHistory = history.filter((item) =>
-    item.title.toLowerCase().includes(searchText.toLowerCase())
-  );
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, loadHistory]); // 添加loadHistory作为依赖项
 
   return (
     <div className="max-w-[1200px] mx-auto">
@@ -48,25 +81,16 @@ export const History: React.FC = () => {
         />
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-        {filteredHistory.length > 0 ? (
-          filteredHistory.map((item) => (
-            <HistoryItem key={item.id} item={item} />
-          ))
+        {history.length > 0 ? (
+          history.map((item) => <HistoryItem key={item.id} item={item} />)
         ) : (
           <div className="text-center py-5 text-gray-600">暂无历史记录</div>
         )}
       </div>
-      <button
-        className={`fixed bottom-[30px] right-[30px] w-[50px] h-[50px] bg-[#fb7299] text-white rounded-xl cursor-pointer flex items-center justify-center text-2xl transition-all duration-300 shadow-[0_2px_10px_rgba(251,114,153,0.3)] hover:bg-[#fc8bab] hover:translate-y-[-5px] ${
-          showBackToTop
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-5"
-        }`}
-        onClick={handleBackToTop}
-        title="返回顶部"
-      >
-        ↑
-      </button>
+      <div ref={loadMoreRef} className="text-center my-8">
+        {isLoading ? "加载中..." : hasMore ? "向下滚动加载更多" : "没有更多了"}
+      </div>
+      <ScrollToTopButton />
     </div>
   );
 };

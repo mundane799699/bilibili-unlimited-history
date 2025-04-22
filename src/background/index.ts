@@ -1,3 +1,5 @@
+import { openDB } from "../utils/db";
+
 // 初始化定时任务
 chrome.runtime.onInstalled.addListener(() => {
   // 设置每分钟同步一次
@@ -164,7 +166,8 @@ async function syncHistory(isFullSync = false): Promise<boolean> {
 
         // 批量存储历史记录
         for (const item of data.data.list) {
-          await store.put({
+          // put是异步的
+          store.put({
             id: item.history.oid,
             business: item.history.business,
             bvid: item.history.bvid,
@@ -195,21 +198,4 @@ async function syncHistory(isFullSync = false): Promise<boolean> {
     console.error("同步历史记录失败:", error);
     throw error;
   }
-}
-
-// 打开 IndexedDB
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open("bilibiliHistory", 1);
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains("history")) {
-        db.createObjectStore("history", { keyPath: "id" });
-      }
-    };
-  });
 }

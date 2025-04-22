@@ -19,9 +19,14 @@ export const openDB = (): Promise<IDBDatabase> => {
     request.onsuccess = () => resolve(request.result);
 
     request.onupgradeneeded = (event) => {
+      // onupgradeneeded会在首次创建数据库或者升级时触发
+      console.log("onupgradeneeded");
       const db = (event.target as IDBOpenDBRequest).result;
-      const store = db.createObjectStore("history", { keyPath: "id" });
-      store.createIndex("viewTime", "viewTime", { unique: false });
+      if (!db.objectStoreNames.contains("history")) {
+        const store = db.createObjectStore("history", { keyPath: "id" });
+        // 创建viewTime索引
+        store.createIndex("viewTime", "viewTime", { unique: false });
+      }
     };
   });
 };
@@ -44,14 +49,56 @@ export const saveHistory = async (history: HistoryItem[]): Promise<void> => {
   });
 };
 
-export const getHistory = async (): Promise<HistoryItem[]> => {
+export const getHistory = async (
+  page: number = 0,
+  pageSize: number = 20
+): Promise<{ items: HistoryItem[]; hasMore: boolean }> => {
   const db = await openDB();
   const tx = db.transaction("history", "readonly");
   const store = tx.objectStore("history");
-  const request = store.getAll();
+  const index = store.index("viewTime");
+
+  // 获取总记录数
+  const countRequest = store.count();
+  const count = await new Promise<number>((resolve, reject) => {
+    countRequest.onsuccess = () => resolve(countRequest.result);
+    countRequest.onerror = () => reject(countRequest.error);
+  });
+
+  // 使用游标按viewTime降序获取指定页的数据
+  const request = index.openCursor(null, "prev");
+  const items: HistoryItem[] = [];
+  let skipCount = page * pageSize;
+  let collected = 0;
 
   return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = (event) => {
+      const cursor = (event.target as IDBRequest).result as IDBCursorWithValue;
+
+      if (cursor) {
+        if (skipCount > 0) {
+          skipCount--;
+          cursor.continue();
+        } else if (collected < pageSize) {
+          items.push(cursor.value);
+          collected++;
+          cursor.continue();
+        } else {
+          // 已经获取了足够的数据
+          resolve({
+            items,
+            hasMore: page * pageSize + pageSize < count,
+          });
+        }
+      } else {
+        // 没有更多数据了
+        resolve({
+          items,
+          hasMore: false,
+        });
+      }
+    };
+
     request.onerror = () => reject(request.error);
   });
 };
