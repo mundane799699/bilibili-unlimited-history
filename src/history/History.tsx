@@ -16,8 +16,9 @@ export const History: React.FC = () => {
 
   // 使用useCallback记忆化loadHistory函数
   const loadHistory = useCallback(async (page: number = 0) => {
-    console.log("loadHistory");
-    if (isLoadingRef.current) return;
+    if (isLoadingRef.current) {
+      return;
+    }
 
     try {
       setIsLoading(true);
