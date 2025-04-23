@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Bilibili Unlimited History",
-  "version": "1.0",
-  "description": "View your Bilibili history without limitations",
+  "name": "Bilibili 无限历史记录",
+  "version": "1.0.0",
+  "description": "不限制数量的保存你的bilibili历史记录",
   "permissions": ["storage", "tabs", "cookies", "alarms"],
   "host_permissions": ["*://*.bilibili.com/*"],
   "action": {
