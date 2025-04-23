@@ -32,7 +32,7 @@ export const Popup: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-2.5">
-      <h2 className="text-xl font-bold">Bilibili 历史记录</h2>
+      <h2 className="text-xl font-bold">Bilibili 无限历史记录</h2>
       <button
         className="w-full px-2 py-2 text-white bg-[#00a1d6] rounded hover:bg-[#0091c2] disabled:bg-gray-300 disabled:cursor-not-allowed"
         onClick={() => {

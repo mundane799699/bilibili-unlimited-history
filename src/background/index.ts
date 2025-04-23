@@ -174,6 +174,8 @@ async function syncHistory(isFullSync = false): Promise<boolean> {
             title: item.title,
             cover: item.cover || (item.covers && item.covers[0]),
             viewTime: item.view_at,
+            author_name: item.author_name || "",
+            author_mid: item.author_mid || "",
             timestamp: Date.now(),
           });
         }
