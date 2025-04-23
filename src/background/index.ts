@@ -1,4 +1,4 @@
-import { openDB } from "../utils/db";
+import { openDB, getItem } from "../utils/db";
 
 // 初始化定时任务
 chrome.runtime.onInstalled.addListener((details) => {
@@ -161,8 +161,8 @@ async function syncHistory(isFullSync = false): Promise<boolean> {
           const firstItem = data.data.list[0];
           const lastItem = data.data.list[data.data.list.length - 1];
           // 如果firstItem的bvid和lastItem的bvid在indexedDB中存在，则不进行同步
-          const firstItemExists = await store.get(firstItem.history.oid);
-          const lastItemExists = await store.get(lastItem.history.oid);
+          const firstItemExists = await getItem(store, firstItem.history.oid);
+          const lastItemExists = await getItem(store, lastItem.history.oid);
           if (firstItemExists && lastItemExists) {
             console.log("增量同步至此结束");
             hasMore = false;

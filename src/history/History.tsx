@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { HistoryItem } from "../components/HistoryItem";
-import { getHistory, deleteDB } from "../utils/db";
+import { getHistory, clearHistory } from "../utils/db";
 import { HistoryItem as HistoryItemType } from "../types";
 import ScrollToTopButton from "../components/ScrollToTopButton";
 import { useDebounce } from "use-debounce";
@@ -84,8 +84,8 @@ export const History: React.FC = () => {
   const handleReset = async () => {
     try {
       setIsResetLoading(true);
-      setResetStatus("正在删除数据库...");
-      await deleteDB();
+      setResetStatus("正在清空历史记录...");
+      await clearHistory();
       setResetStatus("正在清理存储...");
       await chrome.storage.local.clear();
       setResetStatus("正在重新加载...");
@@ -101,6 +101,17 @@ export const History: React.FC = () => {
       setShowResetResultDialog(true);
       setShowConfirmDialog(false);
     }
+  };
+
+  const getLoadMoreText = () => {
+    if (history.length === 0) {
+      return keyword.trim() ? "没有找到匹配的历史记录" : "暂无历史记录";
+    }
+    return isLoading
+      ? "加载中..."
+      : hasMore
+      ? "向下滚动加载更多"
+      : "没有更多了";
   };
 
   return (
@@ -131,16 +142,12 @@ export const History: React.FC = () => {
         />
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-        {history.length > 0 ? (
-          history.map((item) => <HistoryItem key={item.id} item={item} />)
-        ) : (
-          <div className="text-center py-5 text-gray-600">
-            {keyword.trim() ? "没有找到匹配的历史记录" : "暂无历史记录"}
-          </div>
-        )}
+        {history.map((item) => (
+          <HistoryItem key={item.id} item={item} />
+        ))}
       </div>
       <div ref={loadMoreRef} className="text-center my-8">
-        {isLoading ? "加载中..." : hasMore ? "向下滚动加载更多" : "没有更多了"}
+        {getLoadMoreText()}
       </div>
       <ScrollToTopButton />
 

@@ -128,3 +128,33 @@ export const deleteDB = () => {
     };
   });
 };
+
+export const getItem = async (
+  store: IDBObjectStore,
+  key: string
+): Promise<any> => {
+  return new Promise((resolve) => {
+    const request = store.get(key);
+    request.onsuccess = () => resolve(request.result);
+  });
+};
+
+export const clearHistory = async (): Promise<void> => {
+  const db = await openDB();
+  const tx = db.transaction("history", "readwrite");
+  const store = tx.objectStore("history");
+
+  return new Promise<void>((resolve, reject) => {
+    const request = store.clear();
+
+    request.onsuccess = () => {
+      console.log("历史记录已清空");
+      resolve();
+    };
+
+    request.onerror = () => {
+      console.error("清空历史记录失败:", request.error);
+      reject(request.error);
+    };
+  });
+};
