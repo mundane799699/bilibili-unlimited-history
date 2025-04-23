@@ -69,16 +69,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // 设置同步状态为进行中
         await setStorageValue("isSyncing", true);
 
-        // 获取上次同步时间
-        const lastSync = await getStorageValue("lastSync");
-        if (lastSync) {
-          console.log("lastSync", lastSync);
+        // 之前有没有全量同步过
+        const hasFullSync = await getStorageValue("hasFullSync");
+        if (hasFullSync) {
           await syncHistory(false);
           // 如果已经有同步记录，直接返回成功
           sendResponse({ success: true, message: "增量同步成功" });
         } else {
           // 如果没有同步记录，执行全量同步
           await syncHistory(true);
+          await setStorageValue("hasFullSync", true);
           sendResponse({ success: true, message: "首次全量同步成功" });
         }
       } catch (error) {

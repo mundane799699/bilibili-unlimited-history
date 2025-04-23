@@ -16,12 +16,6 @@ export const Popup: React.FC = () => {
     });
   }, []);
 
-  const handleOpenHistory = () => {
-    chrome.tabs.create({
-      url: "history/index.html",
-    });
-  };
-
   const handleSync = () => {
     setIsSyncing(true);
     setStatus("正在同步...");
@@ -41,7 +35,11 @@ export const Popup: React.FC = () => {
       <h2 className="text-xl font-bold">Bilibili 历史记录</h2>
       <button
         className="w-full px-2 py-2 text-white bg-[#00a1d6] rounded hover:bg-[#0091c2] disabled:bg-gray-300 disabled:cursor-not-allowed"
-        onClick={handleOpenHistory}
+        onClick={() => {
+          chrome.tabs.create({
+            url: "history/index.html",
+          });
+        }}
         disabled={isSyncing}
       >
         打开历史记录页面

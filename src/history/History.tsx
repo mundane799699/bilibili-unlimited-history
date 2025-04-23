@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { HistoryItem } from "../components/HistoryItem";
-import { getHistory } from "../utils/db";
+import { getHistory, deleteDB } from "../utils/db";
 import { HistoryItem as HistoryItemType } from "../types";
 import ScrollToTopButton from "../components/ScrollToTopButton";
 import { useDebounce } from "use-debounce";
@@ -12,9 +12,14 @@ export const History: React.FC = () => {
   const currentPageRef = useRef(0);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetLoading, setIsResetLoading] = useState(false);
+  const [resetStatus, setResetStatus] = useState("");
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isLoadingRef = useRef<boolean>(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showResetResultDialog, setShowResetResultDialog] = useState(false);
+  const [resetResult, setResetResult] = useState("");
 
   // 使用useCallback记忆化loadHistory函数
   const loadHistory = useCallback(
@@ -76,10 +81,47 @@ export const History: React.FC = () => {
     };
   }, [hasMore, loadHistory]);
 
+  const handleReset = async () => {
+    try {
+      setIsResetLoading(true);
+      setResetStatus("正在删除数据库...");
+      await deleteDB();
+      setResetStatus("正在清理存储...");
+      await chrome.storage.local.clear();
+      setResetStatus("正在重新加载...");
+      currentPageRef.current = 0;
+      await loadHistory(0);
+      setResetResult("恢复出厂设置成功！");
+    } catch (error) {
+      console.error("恢复出厂设置失败:", error);
+      setResetResult("恢复出厂设置失败，请重试！");
+    } finally {
+      setIsResetLoading(false);
+      setResetStatus("");
+      setShowResetResultDialog(true);
+      setShowConfirmDialog(false);
+    }
+  };
+
   return (
     <div className="max-w-[1200px] mx-auto">
       <div className="flex justify-between items-center mb-5 sticky top-0 bg-white py-4 z-10">
-        <h1 className="text-2xl font-bold">Bilibili 无限历史记录</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">Bilibili 无限历史记录</h1>
+          <button
+            onClick={() => chrome.tabs.create({ url: "about/index.html" })}
+            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 border border-gray-200 rounded hover:border-gray-300 transition-colors"
+          >
+            关于
+          </button>
+          <button
+            onClick={() => setShowConfirmDialog(true)}
+            className="px-3 py-1 text-sm text-red-600 hover:text-red-900 border border-red-200 rounded hover:border-red-300 transition-colors"
+            disabled={isResetLoading}
+          >
+            恢复出厂设置
+          </button>
+        </div>
         <input
           type="text"
           className="w-[300px] px-2 py-2 mr-2 border border-gray-200 rounded"
@@ -101,6 +143,57 @@ export const History: React.FC = () => {
         {isLoading ? "加载中..." : hasMore ? "向下滚动加载更多" : "没有更多了"}
       </div>
       <ScrollToTopButton />
+
+      {/* 确认弹窗 */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">确认恢复出厂设置？</h3>
+            <p className="text-gray-600 mb-6">
+              此操作将删除所有本地存储的历史记录数据，且无法恢复。确定要继续吗？
+            </p>
+            {isResetLoading && (
+              <p className="text-blue-600 mb-4">{resetStatus}</p>
+            )}
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowConfirmDialog(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isResetLoading}
+              >
+                取消
+              </button>
+              <button
+                onClick={() => {
+                  handleReset();
+                }}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isResetLoading}
+              >
+                确认
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showResetResultDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <p className="text-xl text-gray-600 mb-6 text-center font-medium">
+              {resetResult}
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowResetResultDialog(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                确定
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

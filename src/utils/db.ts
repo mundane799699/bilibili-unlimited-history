@@ -114,3 +114,17 @@ export const getHistory = async (
     request.onerror = () => reject(request.error);
   });
 };
+
+export const deleteDB = () => {
+  return new Promise<void>((resolve, reject) => {
+    const request = indexedDB.deleteDatabase(DB_CONFIG.name);
+    request.onsuccess = () => {
+      console.log("数据库删除成功");
+      resolve();
+    };
+    request.onerror = () => {
+      console.error("数据库删除失败:", request.error);
+      reject(request.error);
+    };
+  });
+};

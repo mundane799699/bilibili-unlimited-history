@@ -34,7 +34,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ item }) => {
               className="w-full h-40 object-cover"
             />
             {getTypeTag(item.business) && (
-              <span className="absolute bottom-2 right-2 px-2 py-1 rounded text-xs text-white bg-[#fb7299] z-10">
+              <span className="absolute bottom-2 right-2 px-2 py-1 rounded text-xs text-white bg-[#fb7299]">
                 {getTypeTag(item.business)}
               </span>
             )}
