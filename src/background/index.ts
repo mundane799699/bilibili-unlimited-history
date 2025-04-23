@@ -1,11 +1,16 @@
 import { openDB } from "../utils/db";
 
 // 初始化定时任务
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener((details) => {
   // 设置每分钟同步一次
   chrome.alarms.create("syncHistory", {
     periodInMinutes: 1,
   });
+
+  // 只在首次安装时打开 about 页面
+  if (details.reason === "install") {
+    chrome.tabs.create({ url: "about/index.html" });
+  }
 });
 
 // 监听定时任务
