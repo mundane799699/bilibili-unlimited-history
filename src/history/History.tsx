@@ -3,10 +3,12 @@ import { HistoryItem } from "../components/HistoryItem";
 import { getHistory } from "../utils/db";
 import { HistoryItem as HistoryItemType } from "../types";
 import ScrollToTopButton from "../components/ScrollToTopButton";
+import { useDebounce } from "use-debounce";
 
 export const History: React.FC = () => {
   const [history, setHistory] = useState<HistoryItemType[]>([]);
-  const [searchText, setSearchText] = useState("");
+  const [keyword, setKeyword] = useState("");
+  const [debouncedKeyword] = useDebounce(keyword, 300);
   const currentPageRef = useRef(0);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,35 +17,40 @@ export const History: React.FC = () => {
   const isLoadingRef = useRef<boolean>(false);
 
   // 使用useCallback记忆化loadHistory函数
-  const loadHistory = useCallback(async (page: number = 0) => {
-    if (isLoadingRef.current) {
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      isLoadingRef.current = true;
-      const { items, hasMore } = await getHistory(page);
-
-      if (page === 0) {
-        setHistory(items);
-      } else {
-        setHistory((prev) => [...prev, ...items]);
+  const loadHistory = useCallback(
+    async (page: number = 0) => {
+      if (isLoadingRef.current) {
+        return;
       }
 
-      currentPageRef.current = currentPageRef.current + 1;
-      setHasMore(hasMore);
-    } catch (error) {
-      console.error("Failed to load history:", error);
-    } finally {
-      setIsLoading(false);
-      isLoadingRef.current = false;
-    }
-  }, []); // 空依赖数组，因为所有依赖都使用了ref
+      try {
+        setIsLoading(true);
+        isLoadingRef.current = true;
+        const { items, hasMore } = await getHistory(page, 20, debouncedKeyword);
 
+        if (page === 0) {
+          setHistory(items);
+        } else {
+          setHistory((prev) => [...prev, ...items]);
+        }
+
+        currentPageRef.current = currentPageRef.current + 1;
+        setHasMore(hasMore);
+      } catch (error) {
+        console.error("Failed to load history:", error);
+      } finally {
+        setIsLoading(false);
+        isLoadingRef.current = false;
+      }
+    },
+    [debouncedKeyword]
+  ); // 使用debouncedKeyword作为依赖项
+
+  // 当debouncedKeyword变化时重新加载数据
   useEffect(() => {
+    currentPageRef.current = 0;
     loadHistory(0);
-  }, [loadHistory]);
+  }, [debouncedKeyword, loadHistory]);
 
   useEffect(() => {
     const options = {
@@ -67,25 +74,27 @@ export const History: React.FC = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, loadHistory]); // 添加loadHistory作为依赖项
+  }, [hasMore, loadHistory]);
 
   return (
     <div className="max-w-[1200px] mx-auto">
-      <div className="flex justify-between items-center mb-5">
-        <h1 className="text-2xl font-bold">Bilibili 历史记录</h1>
+      <div className="flex justify-between items-center mb-5 sticky top-0 bg-white py-4 z-10">
+        <h1 className="text-2xl font-bold">Bilibili 无限历史记录</h1>
         <input
           type="text"
-          className="w-[300px] px-2 py-2 border border-gray-200 rounded"
+          className="w-[300px] px-2 py-2 mr-2 border border-gray-200 rounded"
           placeholder="搜索历史记录..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
         />
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
         {history.length > 0 ? (
           history.map((item) => <HistoryItem key={item.id} item={item} />)
         ) : (
-          <div className="text-center py-5 text-gray-600">暂无历史记录</div>
+          <div className="text-center py-5 text-gray-600">
+            {keyword.trim() ? "没有找到匹配的历史记录" : "暂无历史记录"}
+          </div>
         )}
       </div>
       <div ref={loadMoreRef} className="text-center my-8">

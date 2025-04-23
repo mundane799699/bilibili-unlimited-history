@@ -49,9 +49,18 @@ export const saveHistory = async (history: HistoryItem[]): Promise<void> => {
   });
 };
 
+const matchCondition = (item: HistoryItem, keyword: string) => {
+  return matchKeyword(item, keyword);
+};
+
+const matchKeyword = (item: HistoryItem, keyword: string) => {
+  return !keyword || item.title.toLowerCase().includes(keyword.toLowerCase());
+};
+
 export const getHistory = async (
   page: number = 0,
-  pageSize: number = 20
+  pageSize: number = 20,
+  keyword: string = ""
 ): Promise<{ items: HistoryItem[]; hasMore: boolean }> => {
   const db = await openDB();
   const tx = db.transaction("history", "readonly");
@@ -76,12 +85,15 @@ export const getHistory = async (
       const cursor = (event.target as IDBRequest).result as IDBCursorWithValue;
 
       if (cursor) {
+        const value = cursor.value as HistoryItem;
         if (skipCount > 0) {
           skipCount--;
           cursor.continue();
         } else if (collected < pageSize) {
-          items.push(cursor.value);
-          collected++;
+          if (matchCondition(value, keyword)) {
+            items.push(value);
+            collected++;
+          }
           cursor.continue();
         } else {
           // 已经获取了足够的数据

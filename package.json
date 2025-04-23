@@ -12,7 +12,8 @@
   "dependencies": {
     "@types/chrome": "^0.0.315",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "use-debounce": "^10.0.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
