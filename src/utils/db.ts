@@ -58,7 +58,7 @@ const matchKeyword = (item: HistoryItem, keyword: string) => {
 };
 
 export const getHistory = async (
-  page: number = 0,
+  lastViewTime: any = "",
   pageSize: number = 20,
   keyword: string = ""
 ): Promise<{ items: HistoryItem[]; hasMore: boolean }> => {
@@ -67,18 +67,15 @@ export const getHistory = async (
   const store = tx.objectStore("history");
   const index = store.index("viewTime");
 
-  // 获取总记录数
-  const countRequest = store.count();
-  const count = await new Promise<number>((resolve, reject) => {
-    countRequest.onsuccess = () => resolve(countRequest.result);
-    countRequest.onerror = () => reject(countRequest.error);
-  });
+  let range = null;
+  if (lastViewTime) {
+    range = IDBKeyRange.upperBound(lastViewTime, true);
+  }
 
   // 使用游标按viewTime降序获取指定页的数据
-  const request = index.openCursor(null, "prev");
+  const request = index.openCursor(range, "prev");
   const items: HistoryItem[] = [];
-  let skipCount = page * pageSize;
-  let collected = 0;
+  let hasMore = false;
 
   return new Promise((resolve, reject) => {
     request.onsuccess = (event) => {
@@ -86,27 +83,26 @@ export const getHistory = async (
 
       if (cursor) {
         const value = cursor.value as HistoryItem;
-        if (skipCount > 0) {
-          skipCount--;
-          cursor.continue();
-        } else if (collected < pageSize) {
+
+        // 如果还没收集够数据，继续收集
+        if (items.length < pageSize) {
           if (matchCondition(value, keyword)) {
             items.push(value);
-            collected++;
           }
           cursor.continue();
         } else {
-          // 已经获取了足够的数据
+          // 已经收集够数据，检查是否还有更多
+          hasMore = true;
           resolve({
             items,
-            hasMore: page * pageSize + pageSize < count,
+            hasMore,
           });
         }
       } else {
         // 没有更多数据了
         resolve({
           items,
-          hasMore: false,
+          hasMore,
         });
       }
     };

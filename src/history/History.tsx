@@ -8,8 +8,7 @@ import { useDebounce } from "use-debounce";
 export const History: React.FC = () => {
   const [history, setHistory] = useState<HistoryItemType[]>([]);
   const [keyword, setKeyword] = useState("");
-  const [debouncedKeyword] = useDebounce(keyword, 300);
-  const currentPageRef = useRef(0);
+  const [debouncedKeyword] = useDebounce(keyword, 500);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isResetLoading, setIsResetLoading] = useState(false);
@@ -21,41 +20,54 @@ export const History: React.FC = () => {
   const [showResetResultDialog, setShowResetResultDialog] = useState(false);
   const [resetResult, setResetResult] = useState("");
 
-  // 使用useCallback记忆化loadHistory函数
-  const loadHistory = useCallback(
-    async (page: number = 0) => {
-      if (isLoadingRef.current) {
-        return;
+  const loadHistory = async (isAppend: boolean = false) => {
+    if (isLoadingRef.current) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      isLoadingRef.current = true;
+
+      // 使用函数式更新来获取最新的history值
+      const lastViewTime = isAppend
+        ? await new Promise<number | "">((resolve) => {
+            setHistory((currentHistory) => {
+              const lastTime =
+                currentHistory.length > 0
+                  ? currentHistory[currentHistory.length - 1].viewTime
+                  : "";
+              resolve(lastTime);
+              return currentHistory;
+            });
+          })
+        : "";
+
+      const { items, hasMore } = await getHistory(
+        lastViewTime,
+        20,
+        debouncedKeyword
+      );
+
+      if (isAppend) {
+        setHistory((prev) => [...prev, ...items]);
+      } else {
+        setHistory(items);
       }
 
-      try {
-        setIsLoading(true);
-        isLoadingRef.current = true;
-        const { items, hasMore } = await getHistory(page, 20, debouncedKeyword);
-
-        if (page === 0) {
-          setHistory(items);
-        } else {
-          setHistory((prev) => [...prev, ...items]);
-        }
-
-        currentPageRef.current = currentPageRef.current + 1;
-        setHasMore(hasMore);
-      } catch (error) {
-        console.error("Failed to load history:", error);
-      } finally {
-        setIsLoading(false);
-        isLoadingRef.current = false;
-      }
-    },
-    [debouncedKeyword]
-  ); // 使用debouncedKeyword作为依赖项
+      setHasMore(hasMore);
+    } catch (error) {
+      console.error("Failed to load history:", error);
+    } finally {
+      setIsLoading(false);
+      isLoadingRef.current = false;
+    }
+  };
 
   // 当debouncedKeyword变化时重新加载数据
   useEffect(() => {
-    currentPageRef.current = 0;
-    loadHistory(0);
-  }, [debouncedKeyword, loadHistory]);
+    loadHistory(false);
+  }, [debouncedKeyword]);
 
   useEffect(() => {
     const options = {
@@ -66,7 +78,8 @@ export const History: React.FC = () => {
     observerRef.current = new IntersectionObserver((entries) => {
       const [entry] = entries;
       if (entry.isIntersecting && hasMore && !isLoadingRef.current) {
-        loadHistory(currentPageRef.current);
+        // 闭包陷阱，这个函数会捕获第一次渲染时的history值
+        loadHistory(true);
       }
     }, options);
 
@@ -79,7 +92,7 @@ export const History: React.FC = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, loadHistory]);
+  }, [hasMore]);
 
   const handleReset = async () => {
     try {
@@ -89,8 +102,7 @@ export const History: React.FC = () => {
       setResetStatus("正在清理存储...");
       await chrome.storage.local.clear();
       setResetStatus("正在重新加载...");
-      currentPageRef.current = 0;
-      await loadHistory(0);
+      await loadHistory(false);
       setResetResult("恢复出厂设置成功！");
     } catch (error) {
       console.error("恢复出厂设置失败:", error);

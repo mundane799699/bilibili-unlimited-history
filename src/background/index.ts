@@ -140,7 +140,6 @@ async function syncHistory(isFullSync = false): Promise<boolean> {
       }
 
       const data = await response.json();
-      console.log(data);
 
       if (data.code !== 0) {
         throw new Error(data.message || "获取历史记录失败");
