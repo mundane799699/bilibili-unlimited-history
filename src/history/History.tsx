@@ -79,6 +79,7 @@ export const History: React.FC = () => {
       const [entry] = entries;
       if (entry.isIntersecting && hasMore && !isLoadingRef.current) {
         // 闭包陷阱，这个函数会捕获第一次渲染时的history值
+        // debouncedKeyword也是一样的问题
         loadHistory(true);
       }
     }, options);
@@ -92,7 +93,7 @@ export const History: React.FC = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore]);
+  }, [hasMore, debouncedKeyword]);
 
   const handleReset = async () => {
     try {
