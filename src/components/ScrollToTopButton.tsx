@@ -2,20 +2,31 @@ import { useEffect, useState } from "react";
 
 const ScrollToTopButton = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
+
   const handleBackToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const scrollContainer = document.querySelector(".flex-1.overflow-auto");
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      const scrollContainer = document.querySelector(".flex-1.overflow-auto");
+      if (scrollContainer) {
+        setShowBackToTop(scrollContainer.scrollTop > 300);
+      }
     };
+
+    const scrollContainer = document.querySelector(".flex-1.overflow-auto");
+    if (scrollContainer) {
+      scrollContainer.addEventListener("scroll", handleScroll);
+      return () => {
+        scrollContainer.removeEventListener("scroll", handleScroll);
+      };
+    }
   }, []);
 
-  const handleScroll = () => {
-    setShowBackToTop(window.scrollY > 300);
-  };
   return (
     <div className="fixed bottom-4 right-4 z-[100]">
       <button

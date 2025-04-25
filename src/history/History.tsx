@@ -133,12 +133,6 @@ export const History: React.FC = () => {
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold">Bilibili 无限历史记录</h1>
           <button
-            onClick={() => chrome.tabs.create({ url: "about/index.html" })}
-            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 border border-gray-200 rounded hover:border-gray-300 transition-colors"
-          >
-            关于
-          </button>
-          <button
             onClick={() => setShowConfirmDialog(true)}
             className="px-3 py-1 text-sm text-red-600 hover:text-red-900 border border-red-200 rounded hover:border-red-300 transition-colors"
             disabled={isResetLoading}
@@ -169,7 +163,7 @@ export const History: React.FC = () => {
       <div ref={loadMoreRef} className="text-center my-8">
         {getLoadMoreText()}
       </div>
-      <ScrollToTopButton />
+      
 
       {/* 确认弹窗 */}
       {showConfirmDialog && (
