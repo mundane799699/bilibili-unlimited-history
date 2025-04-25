@@ -4,7 +4,7 @@ export const Sidebar = () => {
   const location = useLocation();
 
   return (
-    <div className="w-64 bg-gray-100 flex-shrink-0">
+    <div className="w-40 bg-gray-100 flex-shrink-0">
       <nav className="space-y-2 p-4">
         <Link
           to="/"
