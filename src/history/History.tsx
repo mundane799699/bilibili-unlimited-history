@@ -104,7 +104,7 @@ export const History: React.FC = () => {
 
   return (
     <div className="max-w-[1200px] mx-auto">
-      <div className="flex justify-between items-center mb-5 sticky top-0 bg-white py-4 z-10">
+      <div className="flex justify-between items-center mb-5 sticky top-0 bg-white py-4 z-10 border-b border-gray-200">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold">Bilibili 无限历史记录</h1>
         </div>

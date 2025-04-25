@@ -1,31 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, RefObject } from "react";
 
-const ScrollToTopButton = () => {
+interface ScrollToTopButtonProps {
+  containerRef: RefObject<HTMLDivElement>;
+}
+
+const ScrollToTopButton = ({ containerRef }: ScrollToTopButtonProps) => {
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   const handleBackToTop = () => {
-    const scrollContainer = document.querySelector(".flex-1.overflow-auto");
-    if (scrollContainer) {
-      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+    if (containerRef.current) {
+      containerRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollContainer = document.querySelector(".flex-1.overflow-auto");
-      if (scrollContainer) {
-        setShowBackToTop(scrollContainer.scrollTop > 300);
+      if (containerRef.current) {
+        setShowBackToTop(containerRef.current.scrollTop > 300);
       }
     };
 
-    const scrollContainer = document.querySelector(".flex-1.overflow-auto");
-    if (scrollContainer) {
-      scrollContainer.addEventListener("scroll", handleScroll);
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
       return () => {
-        scrollContainer.removeEventListener("scroll", handleScroll);
+        container.removeEventListener("scroll", handleScroll);
       };
     }
-  }, []);
+  }, [containerRef]);
 
   return (
     <div className="fixed bottom-4 right-4 z-[100]">
