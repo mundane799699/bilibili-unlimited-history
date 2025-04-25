@@ -1,8 +1,11 @@
 import { HistoryItem as HistoryItemType } from "../types";
 import { getContentUrl } from "../utils/api";
+import { Trash2 } from "lucide-react";
+import { deleteHistoryItem } from "../utils/db";
 
 interface HistoryItemProps {
   item: HistoryItemType;
+  onDelete?: () => void;
 }
 
 const getTypeTag = (business: string): string => {
@@ -17,9 +20,21 @@ const getTypeTag = (business: string): string => {
   }
 };
 
-export const HistoryItem: React.FC<HistoryItemProps> = ({ item }) => {
+export const HistoryItem: React.FC<HistoryItemProps> = ({ item, onDelete }) => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      await deleteHistoryItem(item.id);
+      onDelete?.();
+    } catch (error) {
+      console.error("删除历史记录失败:", error);
+    }
+  };
+
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
+    <div className="border border-gray-200 rounded-lg overflow-hidden transition-transform duration-200 hover:shadow-lg">
       <a
         href={getContentUrl(item)}
         target="_blank"
@@ -40,9 +55,17 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ item }) => {
             )}
           </div>
           <div className="p-2.5">
-            <h3 className="m-0 text-sm leading-[1.4] h-10 overflow-hidden line-clamp-2">
-              {item.title}
-            </h3>
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="m-0 text-sm leading-[1.4] h-10 overflow-hidden line-clamp-2 flex-1">
+                {item.title}
+              </h3>
+              <button
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                onClick={handleDelete}
+              >
+                <Trash2 className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
             <div className="text-gray-500 text-xs mt-1">
               观看时间：{new Date(item.viewTime * 1000).toLocaleString()}
             </div>

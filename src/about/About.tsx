@@ -13,13 +13,6 @@ export const About: React.FC = () => {
             <p>
               由于b站本身的历史记录有存储上限，而我个人希望可以查看更久远的历史记录，所以开发了这个扩展。
             </p>
-            <p>
-              初次使用时，请点击该扩展图标，然后点击"立即同步"按钮，即可同步你的B站历史记录到本地。
-            </p>
-            <p>
-              同步完成后，点击"打开历史记录页面"按钮，即可打开历史记录页面查看。所有数据都存储在本地indexedDB中。
-            </p>
-            <p>每隔1分钟，会自动增量的同步一次你的B站历史记录。</p>
           </div>
         </section>
 
@@ -29,15 +22,17 @@ export const About: React.FC = () => {
             <li>突破 Bilibili 历史记录的数量限制</li>
             <li>支持按时间排序浏览历史记录</li>
             <li>支持按视频标题搜索历史记录</li>
-            <li>自动同步最新的观看记录</li>
+            <li>每隔1分钟自动增量的同步一次历史记录</li>
+            <li>所有数据都存储在本地indexedDB</li>
           </ul>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold mb-3">使用说明</h2>
           <ol className="list-decimal list-inside text-gray-600 space-y-2 text-base">
+            <li>登录b站网页版</li>
             <li>安装扩展后，点击扩展图标</li>
-            <li>点击立即同步按钮会全量同步你的 Bilibili 观看历史</li>
+            <li>首次点击立即同步按钮会全量同步你的 Bilibili 观看历史</li>
             <li>同步完成后，点击打开历史记录页面按钮，即可查看历史记录</li>
             <li>可以使用搜索框搜索特定的历史记录</li>
             <li>向下滚动可以加载更多历史记录</li>

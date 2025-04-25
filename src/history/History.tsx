@@ -156,7 +156,14 @@ export const History: React.FC = () => {
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
         {history.map((item) => (
-          <HistoryItem key={item.id} item={item} />
+          <HistoryItem
+            key={item.id}
+            item={item}
+            onDelete={() => {
+              // 从列表中移除被删除的项
+              setHistory((prev) => prev.filter((h) => h.id !== item.id));
+            }}
+          />
         ))}
       </div>
       <div ref={loadMoreRef} className="text-center my-8">

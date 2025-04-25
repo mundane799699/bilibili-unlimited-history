@@ -154,3 +154,23 @@ export const clearHistory = async (): Promise<void> => {
     };
   });
 };
+
+export const deleteHistoryItem = async (id: string): Promise<void> => {
+  const db = await openDB();
+  const tx = db.transaction("history", "readwrite");
+  const store = tx.objectStore("history");
+
+  return new Promise<void>((resolve, reject) => {
+    const request = store.delete(id);
+
+    request.onsuccess = () => {
+      console.log("历史记录删除成功");
+      resolve();
+    };
+
+    request.onerror = () => {
+      console.error("删除历史记录失败:", request.error);
+      reject(request.error);
+    };
+  });
+};
