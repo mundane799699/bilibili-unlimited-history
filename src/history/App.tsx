@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { History } from "./History";
 import { About } from "./About";
 import { Sidebar } from "../components/Sidebar";
+import Settings from "./Settings";
 import ScrollToTopButton from "../components/ScrollToTopButton";
 
 const App = () => {
@@ -15,6 +16,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<History />} />
               <Route path="/about" element={<About />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>

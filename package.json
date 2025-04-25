@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsc -b && vite build --watch && cpx manifest.json dist && cpx \"icons/**/*\" dist/icons && cpx \"src/popup/index.html\" dist/popup && cpx \"src/history/index.html\" dist/history && cpx \"src/about/index.html\" dist/about",
-    "build": "rimraf dist && tsc -b && vite build && cpx manifest.json dist && cpx \"icons/**/*\" dist/icons && cpx \"src/popup/index.html\" dist/popup && cpx \"src/history/index.html\" dist/history && rimraf dist/src",
+    "build": "rimraf dist && tsc -b && vite build && cpx manifest.json dist && cpx \"icons/**/*\" dist/icons && cpx \"src/popup/index.html\" dist/popup && cpx \"src/history/index.html\" dist/history && cpx \"src/about/index.html\" dist/about && rimraf dist/src",
     "lint": "eslint .",
     "preview": "vite preview"
   },

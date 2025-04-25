@@ -26,6 +26,16 @@ export const Sidebar = () => {
         >
           关于
         </Link>
+        <Link
+          to="/settings"
+          className={`block w-full px-4 py-2 text-left rounded transition-colors text-lg ${
+            location.pathname === "/settings"
+              ? "bg-pink-400 text-white"
+              : "text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          设置
+        </Link>
       </nav>
     </div>
   );
