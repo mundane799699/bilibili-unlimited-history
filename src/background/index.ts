@@ -99,6 +99,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })();
 
     return true; // 保持消息通道开放
+  } else if (request.action === "getCookies") {
+    chrome.cookies.getAll({ domain: "bilibili.com" }, (cookies) => {
+      sendResponse({ success: true, cookies });
+    });
+    return true;
   }
 });
 

@@ -26,6 +26,35 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ item, onDelete }) => {
     e.stopPropagation();
 
     try {
+      // 先删除B站服务器上的历史记录
+      await new Promise((resolve, reject) => {
+        chrome.tabs.query({ url: "*://*.bilibili.com/*" }, (tabs) => {
+          if (tabs.length === 0) {
+            reject(new Error("未找到B站标签页，请先打开B站"));
+            return;
+          }
+          // 向第一个找到的B站标签页发送消息
+          chrome.tabs.sendMessage(
+            tabs[0].id!,
+            {
+              action: "deleteHistory",
+              kid: `${item.business}_${item.id}`,
+            },
+            (response) => {
+              if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+                return;
+              }
+              if (response.success) {
+                resolve(response);
+              } else {
+                reject(new Error(response.error));
+              }
+            }
+          );
+        });
+      });
+      // 再删除本地数据库中的历史记录
       await deleteHistoryItem(item.id);
       onDelete?.();
     } catch (error) {
