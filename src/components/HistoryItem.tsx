@@ -78,7 +78,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ item, onDelete }) => {
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden transition-transform duration-200 hover:shadow-lg">
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
       <a
         href={getContentUrl(item)}
         target="_blank"

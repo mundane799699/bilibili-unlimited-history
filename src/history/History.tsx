@@ -41,7 +41,7 @@ export const History: React.FC = () => {
 
       const { items, hasMore } = await getHistory(
         lastViewTime,
-        20,
+        40,
         debouncedKeyword
       );
 
@@ -68,7 +68,7 @@ export const History: React.FC = () => {
   useEffect(() => {
     const options = {
       threshold: 0.1,
-      rootMargin: "20px",
+      rootMargin: "200px",
     };
     // 设置Intersection Observer
     observerRef.current = new IntersectionObserver((entries) => {
