@@ -174,3 +174,28 @@ export const deleteHistoryItem = async (id: string): Promise<void> => {
     };
   });
 };
+
+export const getAllHistory = async (): Promise<HistoryItem[]> => {
+  const db = await openDB();
+  const tx = db.transaction("history", "readonly");
+  const store = tx.objectStore("history");
+  const index = store.index("viewTime");
+
+  return new Promise((resolve, reject) => {
+    const request = index.openCursor(null, "prev");
+    const items: HistoryItem[] = [];
+
+    request.onsuccess = (event) => {
+      const cursor = (event.target as IDBRequest).result as IDBCursorWithValue;
+
+      if (cursor) {
+        items.push(cursor.value as HistoryItem);
+        cursor.continue();
+      } else {
+        resolve(items);
+      }
+    };
+
+    request.onerror = () => reject(request.error);
+  });
+};

@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { clearHistory } from "../utils/db";
 import { getStorageValue, setStorageValue } from "../utils/storage";
 import { IS_SYNC_DELETE } from "../utils/constants";
+import { exportHistoryToCSV } from "../utils/export";
+import toast from "react-hot-toast";
 
 const Settings = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -11,6 +13,8 @@ const Settings = () => {
   const [resetResult, setResetResult] = useState("");
   const [isResetLoading, setIsResetLoading] = useState(false);
   const [resetStatus, setResetStatus] = useState("");
+
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     // 加载同步删除设置
@@ -46,6 +50,19 @@ const Settings = () => {
       setResetStatus("");
       setShowResetResultDialog(true);
       setShowConfirmDialog(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      await exportHistoryToCSV();
+      toast.success("导出成功！");
+    } catch (error) {
+      console.error("导出失败:", error);
+      toast.error("导出失败，请重试！");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -104,13 +121,31 @@ const Settings = () => {
         </div>
       </div>
 
+      <div className="w-full max-w-md mb-8">
+        <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
+          <div>
+            <h3 className="text-lg font-medium text-blue-600">导出历史记录</h3>
+            <p className="text-sm text-gray-500">
+              将所有历史记录导出为CSV文件，方便备份和查看
+            </p>
+          </div>
+          <button
+            onClick={handleExport}
+            className="px-4 py-2 text-sm text-white bg-blue-500 rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isExporting}
+          >
+            {isExporting ? "导出中..." : "导出CSV"}
+          </button>
+        </div>
+      </div>
+
       {/* 确认弹窗 */}
       {showConfirmDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <h3 className="text-xl font-semibold mb-4">确认恢复出厂设置？</h3>
             <p className="text-gray-600 mb-6">
-              此操作将删除所有本地存储的历史记录数据，且无法恢复。确定要继续吗？
+              此操作将删除所有本地存储的历史记录数据和用户偏好，且无法恢复。确定要继续吗？
             </p>
             {isResetLoading && (
               <p className="text-blue-600 mb-4">{resetStatus}</p>
