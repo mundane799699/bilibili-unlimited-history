@@ -5,12 +5,14 @@ import { Sidebar } from "../components/Sidebar";
 import Settings from "./Settings";
 import ScrollToTopButton from "../components/ScrollToTopButton";
 import { useRef } from "react";
+import { Toaster } from "react-hot-toast";
 
 const App = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (
     <HashRouter>
+      <Toaster position="top-center" />
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
         {/* 主内容区域 */}

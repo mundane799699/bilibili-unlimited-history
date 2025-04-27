@@ -1,4 +1,6 @@
 import { openDB, getItem } from "../utils/db";
+import { getStorageValue, setStorageValue } from "../utils/storage";
+import { IS_SYNCING, HAS_FULL_SYNC } from "../utils/constants";
 
 // 初始化定时任务
 chrome.runtime.onInstalled.addListener((details) => {
@@ -20,14 +22,14 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     (async () => {
       try {
         // 检查是否正在同步
-        const isSyncing = await getStorageValue("isSyncing");
+        const isSyncing = await getStorageValue(IS_SYNCING);
         if (isSyncing) {
           console.log("同步正在进行中，跳过本次定时同步");
           return;
         }
 
         // 设置同步状态为进行中
-        await setStorageValue("isSyncing", true);
+        await setStorageValue(IS_SYNCING, true);
 
         // 执行增量同步
         await syncHistory(false);
@@ -35,27 +37,11 @@ chrome.alarms.onAlarm.addListener((alarm) => {
         console.error("定时同步失败:", error);
       } finally {
         // 无论成功还是失败，都重置同步状态
-        await setStorageValue("isSyncing", false);
+        await setStorageValue(IS_SYNCING, false);
       }
     })();
   }
 });
-
-// 从 chrome.storage.local 获取值的异步函数
-async function getStorageValue(key: string): Promise<any> {
-  return new Promise((resolve) => {
-    chrome.storage.local.get([key], (result) => {
-      resolve(result[key]);
-    });
-  });
-}
-
-// 设置 chrome.storage.local 值的异步函数
-async function setStorageValue(key: string, value: any): Promise<void> {
-  return new Promise((resolve) => {
-    chrome.storage.local.set({ [key]: value }, resolve);
-  });
-}
 
 // 监听来自 popup 的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -64,7 +50,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     (async () => {
       try {
         // 检查是否正在同步
-        const isSyncing = await getStorageValue("isSyncing");
+        const isSyncing = await getStorageValue(IS_SYNCING);
         if (isSyncing) {
           console.log("同步正在进行中，请稍后再试");
           sendResponse({ success: false, error: "同步正在进行中，请稍后再试" });
@@ -72,10 +58,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
 
         // 设置同步状态为进行中
-        await setStorageValue("isSyncing", true);
+        await setStorageValue(IS_SYNCING, true);
 
         // 之前有没有全量同步过
-        const hasFullSync = await getStorageValue("hasFullSync");
+        const hasFullSync = await getStorageValue(HAS_FULL_SYNC);
         if (hasFullSync) {
           await syncHistory(false);
           // 如果已经有同步记录，直接返回成功
@@ -83,7 +69,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         } else {
           // 如果没有同步记录，执行全量同步
           await syncHistory(true);
-          await setStorageValue("hasFullSync", true);
+          await setStorageValue(HAS_FULL_SYNC, true);
           sendResponse({ success: true, message: "首次全量同步成功" });
         }
       } catch (error) {
@@ -94,7 +80,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       } finally {
         // 无论成功还是失败，都重置同步状态
-        await setStorageValue("isSyncing", false);
+        await setStorageValue(IS_SYNCING, false);
       }
     })();
 

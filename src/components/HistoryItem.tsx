@@ -2,6 +2,9 @@ import { HistoryItem as HistoryItemType } from "../types";
 import { getContentUrl } from "../utils/api";
 import { Trash2 } from "lucide-react";
 import { deleteHistoryItem } from "../utils/db";
+import { getStorageValue } from "../utils/storage";
+import { toast } from "react-hot-toast";
+import { IS_SYNC_DELETE } from "../utils/constants";
 
 interface HistoryItemProps {
   item: HistoryItemType;
@@ -20,45 +23,57 @@ const getTypeTag = (business: string): string => {
   }
 };
 
+const deleteBilibiliHistory = async (
+  business: string,
+  id: string
+): Promise<void> => {
+  await new Promise((resolve, reject) => {
+    chrome.tabs.query({ url: "*://*.bilibili.com/*" }, (tabs) => {
+      if (tabs.length === 0) {
+        reject(new Error("请先打开一个B站标签页或者关闭同步删除"));
+        return;
+      }
+      // 向第一个找到的B站标签页发送消息
+      chrome.tabs.sendMessage(
+        tabs[0].id!,
+        {
+          action: "deleteHistory",
+          kid: `${business}_${id}`,
+        },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+          if (response.success) {
+            resolve(response);
+          } else {
+            reject(new Error(response.error));
+          }
+        }
+      );
+    });
+  });
+};
+
 export const HistoryItem: React.FC<HistoryItemProps> = ({ item, onDelete }) => {
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
     try {
-      // 先删除B站服务器上的历史记录
-      await new Promise((resolve, reject) => {
-        chrome.tabs.query({ url: "*://*.bilibili.com/*" }, (tabs) => {
-          if (tabs.length === 0) {
-            reject(new Error("未找到B站标签页，请先打开B站"));
-            return;
-          }
-          // 向第一个找到的B站标签页发送消息
-          chrome.tabs.sendMessage(
-            tabs[0].id!,
-            {
-              action: "deleteHistory",
-              kid: `${item.business}_${item.id}`,
-            },
-            (response) => {
-              if (chrome.runtime.lastError) {
-                reject(new Error(chrome.runtime.lastError.message));
-                return;
-              }
-              if (response.success) {
-                resolve(response);
-              } else {
-                reject(new Error(response.error));
-              }
-            }
-          );
-        });
-      });
-      // 再删除本地数据库中的历史记录
+      const isSyncDelete = await getStorageValue(IS_SYNC_DELETE, true);
+      if (isSyncDelete) {
+        // 先删除B站服务器上的历史记录
+        await deleteBilibiliHistory(item.business, item.id);
+        console.log("删除B站服务器上的历史记录成功");
+      }
+      // 删除本地数据库中的历史记录
       await deleteHistoryItem(item.id);
       onDelete?.();
     } catch (error) {
       console.error("删除历史记录失败:", error);
+      toast.error(error instanceof Error ? error.message : "删除历史记录失败");
     }
   };
 

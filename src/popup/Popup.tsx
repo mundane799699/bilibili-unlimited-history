@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 
 export const Popup: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -31,27 +32,30 @@ export const Popup: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-2.5">
-      <h2 className="text-xl font-bold">Bilibili 无限历史记录</h2>
-      <button
-        className="w-full px-2 py-2 text-white bg-[#00a1d6] rounded hover:bg-[#0091c2] disabled:bg-gray-300 disabled:cursor-not-allowed"
-        onClick={() => {
-          chrome.tabs.create({
-            url: "history/index.html",
-          });
-        }}
-        disabled={isSyncing}
-      >
-        打开历史记录页面
-      </button>
-      <button
-        className="w-full px-2 py-2 text-white bg-[#00a1d6] rounded hover:bg-[#0091c2] disabled:bg-gray-300 disabled:cursor-not-allowed"
-        onClick={handleSync}
-        disabled={isSyncing}
-      >
-        {isSyncing ? "同步中..." : "立即同步"}
-      </button>
-      {status && <div className="mt-2.5 text-gray-600">{status}</div>}
-    </div>
+    <>
+      <Toaster position="top-center" />
+      <div className="flex flex-col gap-2.5">
+        <h2 className="text-xl font-bold">Bilibili 无限历史记录</h2>
+        <button
+          className="w-full px-2 py-2 text-white bg-[#00a1d6] rounded hover:bg-[#0091c2] disabled:bg-gray-300 disabled:cursor-not-allowed"
+          onClick={() => {
+            chrome.tabs.create({
+              url: "history/index.html",
+            });
+          }}
+          disabled={isSyncing}
+        >
+          打开历史记录页面
+        </button>
+        <button
+          className="w-full px-2 py-2 text-white bg-[#00a1d6] rounded hover:bg-[#0091c2] disabled:bg-gray-300 disabled:cursor-not-allowed"
+          onClick={handleSync}
+          disabled={isSyncing}
+        >
+          {isSyncing ? "同步中..." : "立即同步"}
+        </button>
+        {status && <div className="mt-2.5 text-gray-600">{status}</div>}
+      </div>
+    </>
   );
 };
