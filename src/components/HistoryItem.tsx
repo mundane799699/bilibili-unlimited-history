@@ -110,8 +110,16 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ item, onDelete }) => {
                 <Trash2 className="w-4 h-4 text-gray-500" />
               </button>
             </div>
-            <div className="text-gray-500 text-xs mt-1">
-              观看时间：{new Date(item.viewTime * 1000).toLocaleString()}
+            <div className="flex justify-between items-center text-gray-500 text-xs mt-1">
+              <a
+                href={`https://space.bilibili.com/${item.author_mid}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-[#fb7299] transition-colors"
+              >
+                {item.author_name}
+              </a>
+              <span>{new Date(item.viewTime * 1000).toLocaleString()}</span>
             </div>
           </div>
         </div>

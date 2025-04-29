@@ -5,6 +5,8 @@ export interface HistoryItem {
   business: "archive" | "pgc" | "article" | "article-list" | "live";
   viewTime: number;
   id: string;
+  author_name: string;
+  author_mid: number;
 }
 
 export interface DBConfig {

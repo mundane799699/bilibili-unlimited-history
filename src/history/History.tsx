@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { HistoryItem } from "../components/HistoryItem";
 import { getHistory, clearHistory } from "../utils/db";
 import { HistoryItem as HistoryItemType } from "../types";
-import ScrollToTopButton from "../components/ScrollToTopButton";
 import { useDebounce } from "use-debounce";
 
 export const History: React.FC = () => {
   const [history, setHistory] = useState<HistoryItemType[]>([]);
   const [keyword, setKeyword] = useState("");
+  const [authorKeyword, setAuthorKeyword] = useState("");
   const [debouncedKeyword] = useDebounce(keyword, 500);
+  const [debouncedAuthorKeyword] = useDebounce(authorKeyword, 500);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,7 +43,8 @@ export const History: React.FC = () => {
       const { items, hasMore } = await getHistory(
         lastViewTime,
         40,
-        debouncedKeyword
+        debouncedKeyword,
+        debouncedAuthorKeyword
       );
 
       if (isAppend) {
@@ -60,10 +62,10 @@ export const History: React.FC = () => {
     }
   };
 
-  // 当debouncedKeyword变化时重新加载数据
+  // 当debouncedKeyword或debouncedAuthorKeyword变化时重新加载数据
   useEffect(() => {
     loadHistory(false);
-  }, [debouncedKeyword]);
+  }, [debouncedKeyword, debouncedAuthorKeyword]);
 
   useEffect(() => {
     const options = {
@@ -74,8 +76,6 @@ export const History: React.FC = () => {
     observerRef.current = new IntersectionObserver((entries) => {
       const [entry] = entries;
       if (entry.isIntersecting && hasMore && !isLoadingRef.current) {
-        // 闭包陷阱，这个函数会捕获第一次渲染时的history值
-        // debouncedKeyword也是一样的问题
         loadHistory(true);
       }
     }, options);
@@ -89,7 +89,7 @@ export const History: React.FC = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, debouncedKeyword]);
+  }, [hasMore, debouncedKeyword, debouncedAuthorKeyword]);
 
   const getLoadMoreText = () => {
     if (history.length === 0) {
@@ -105,16 +105,23 @@ export const History: React.FC = () => {
   return (
     <div className="max-w-[1200px] mx-auto">
       <div className="flex justify-between items-center mb-5 sticky top-0 bg-white py-4 z-10 border-b border-gray-200">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">Bilibili 无限历史记录</h1>
+        <h1 className="text-2xl font-bold">Bilibili 无限历史记录</h1>
+        <div className="flex items-center">
+          <input
+            type="text"
+            className="w-[200px] px-2 py-2 mr-2 border border-gray-200 rounded"
+            placeholder="搜索UP主..."
+            value={authorKeyword}
+            onChange={(e) => setAuthorKeyword(e.target.value)}
+          />
+          <input
+            type="text"
+            className="w-[300px] px-2 py-2 mr-2 border border-gray-200 rounded"
+            placeholder="搜索历史记录..."
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+          />
         </div>
-        <input
-          type="text"
-          className="w-[300px] px-2 py-2 mr-2 border border-gray-200 rounded"
-          placeholder="搜索历史记录..."
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-        />
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
         {history.map((item) => (

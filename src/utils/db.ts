@@ -49,18 +49,30 @@ export const saveHistory = async (history: HistoryItem[]): Promise<void> => {
   });
 };
 
-const matchCondition = (item: HistoryItem, keyword: string) => {
-  return matchKeyword(item, keyword);
+const matchCondition = (
+  item: HistoryItem,
+  keyword: string,
+  authorKeyword: string
+) => {
+  return matchKeyword(item, keyword) && matchAuthorKeyword(item, authorKeyword);
 };
 
 const matchKeyword = (item: HistoryItem, keyword: string) => {
   return !keyword || item.title.toLowerCase().includes(keyword.toLowerCase());
 };
 
+const matchAuthorKeyword = (item: HistoryItem, authorKeyword: string) => {
+  return (
+    !authorKeyword ||
+    item.author_name.toLowerCase().includes(authorKeyword.toLowerCase())
+  );
+};
+
 export const getHistory = async (
   lastViewTime: any = "",
   pageSize: number = 20,
-  keyword: string = ""
+  keyword: string = "",
+  authorKeyword: string = ""
 ): Promise<{ items: HistoryItem[]; hasMore: boolean }> => {
   const db = await openDB();
   const tx = db.transaction("history", "readonly");
@@ -86,7 +98,7 @@ export const getHistory = async (
 
         // 如果还没收集够数据，继续收集
         if (items.length < pageSize) {
-          if (matchCondition(value, keyword)) {
+          if (matchCondition(value, keyword, authorKeyword)) {
             items.push(value);
           }
           cursor.continue();
