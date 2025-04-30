@@ -61,7 +61,7 @@ export const About: React.FC = () => {
 
         <section>
           <h2 className="text-xl font-semibold mb-3">版本信息</h2>
-          <p className="text-gray-600 text-base">当前版本：1.3.0</p>
+          <p className="text-gray-600 text-base">当前版本：1.3.1</p>
         </section>
       </div>
     </div>
