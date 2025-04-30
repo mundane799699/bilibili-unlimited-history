@@ -107,20 +107,66 @@ export const History: React.FC = () => {
       <div className="flex justify-between items-center mb-5 sticky top-0 bg-white py-4 z-10 border-b border-gray-200">
         <h1 className="text-2xl font-bold">Bilibili 无限历史记录</h1>
         <div className="flex items-center">
-          <input
-            type="text"
-            className="w-[200px] px-2 py-2 mr-2 border border-gray-200 rounded"
-            placeholder="搜索UP主..."
-            value={authorKeyword}
-            onChange={(e) => setAuthorKeyword(e.target.value)}
-          />
-          <input
-            type="text"
-            className="w-[300px] px-2 py-2 mr-2 border border-gray-200 rounded"
-            placeholder="搜索历史记录..."
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
+          <div className="relative">
+            <input
+              type="text"
+              className="w-[200px] px-2 py-2 mr-2 border border-gray-200 rounded"
+              placeholder="搜索UP主..."
+              value={authorKeyword}
+              onChange={(e) => setAuthorKeyword(e.target.value)}
+            />
+            {authorKeyword && (
+              <button
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors"
+                onClick={() => setAuthorKeyword("")}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+          <div className="relative">
+            <input
+              type="text"
+              className="w-[300px] px-2 py-2 mr-2 border border-gray-200 rounded"
+              placeholder="搜索历史记录..."
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+            {keyword && (
+              <button
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors"
+                onClick={() => setKeyword("")}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">

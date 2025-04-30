@@ -88,7 +88,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ item, onDelete }) => {
         <div>
           <div className="relative">
             <img
-              src={item.cover}
+              src={`${item.cover}@760w_428h_1c.avif`}
               alt={item.title}
               className="w-full h-40 object-cover"
             />
