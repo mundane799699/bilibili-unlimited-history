@@ -10,6 +10,7 @@ export const History: React.FC = () => {
   const [authorKeyword, setAuthorKeyword] = useState("");
   const [debouncedKeyword] = useDebounce(keyword, 500);
   const [debouncedAuthorKeyword] = useDebounce(authorKeyword, 500);
+  const [date, setDate] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,7 +45,8 @@ export const History: React.FC = () => {
         lastViewTime,
         40,
         debouncedKeyword,
-        debouncedAuthorKeyword
+        debouncedAuthorKeyword,
+        date
       );
 
       if (isAppend) {
@@ -65,7 +67,7 @@ export const History: React.FC = () => {
   // 当debouncedKeyword或debouncedAuthorKeyword变化时重新加载数据
   useEffect(() => {
     loadHistory(false);
-  }, [debouncedKeyword, debouncedAuthorKeyword]);
+  }, [debouncedKeyword, debouncedAuthorKeyword, date]);
 
   useEffect(() => {
     const options = {
@@ -76,6 +78,8 @@ export const History: React.FC = () => {
     observerRef.current = new IntersectionObserver((entries) => {
       const [entry] = entries;
       if (entry.isIntersecting && hasMore && !isLoadingRef.current) {
+        // 闭包陷阱，这个函数会捕获第一次渲染时的history值
+        // debouncedKeyword也是一样的问题
         loadHistory(true);
       }
     }, options);
@@ -89,7 +93,7 @@ export const History: React.FC = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, debouncedKeyword, debouncedAuthorKeyword]);
+  }, [hasMore, debouncedKeyword, debouncedAuthorKeyword, date]);
 
   const getLoadMoreText = () => {
     if (history.length === 0) {
@@ -107,10 +111,19 @@ export const History: React.FC = () => {
       <div className="flex justify-between items-center mb-5 sticky top-0 bg-white py-4 z-10 border-b border-gray-200">
         <h1 className="text-2xl font-bold">Bilibili 无限历史记录</h1>
         <div className="flex items-center">
-          <div className="relative">
+          <div className="relative mr-2">
+            <input
+              type="date"
+              className="px-2 py-2 border border-gray-200 rounded"
+              onChange={(e) => {
+                setDate(e.target.value);
+              }}
+            />
+          </div>
+          <div className="relative mr-2">
             <input
               type="text"
-              className="w-[200px] px-2 py-2 mr-2 border border-gray-200 rounded"
+              className="w-[200px] px-2 py-2 border border-gray-200 rounded"
               placeholder="搜索UP主..."
               value={authorKeyword}
               onChange={(e) => setAuthorKeyword(e.target.value)}
@@ -137,10 +150,10 @@ export const History: React.FC = () => {
               </button>
             )}
           </div>
-          <div className="relative">
+          <div className="relative mr-2">
             <input
               type="text"
-              className="w-[300px] px-2 py-2 mr-2 border border-gray-200 rounded"
+              className="w-[300px] px-2 py-2 border border-gray-200 rounded"
               placeholder="搜索历史记录..."
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}

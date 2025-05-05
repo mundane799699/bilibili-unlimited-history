@@ -1,4 +1,5 @@
 import { DBConfig, HistoryItem } from "../types";
+import dayjs from "dayjs";
 
 const DB_CONFIG: DBConfig = {
   name: "bilibiliHistory",
@@ -52,9 +53,24 @@ export const saveHistory = async (history: HistoryItem[]): Promise<void> => {
 const matchCondition = (
   item: HistoryItem,
   keyword: string,
-  authorKeyword: string
+  authorKeyword: string,
+  date: string
 ) => {
-  return matchKeyword(item, keyword) && matchAuthorKeyword(item, authorKeyword);
+  return (
+    matchKeyword(item, keyword) &&
+    matchAuthorKeyword(item, authorKeyword) &&
+    matchDate(item, date)
+  );
+};
+
+const matchDate = (item: HistoryItem, date: string) => {
+  if (!date) {
+    return true;
+  }
+  const ts = Number(item.viewTime);
+  const d = dayjs(ts * 1000);
+  const dateStr = d.format("YYYY-MM-DD");
+  return dateStr === date;
 };
 
 const matchKeyword = (item: HistoryItem, keyword: string) => {
@@ -72,7 +88,8 @@ export const getHistory = async (
   lastViewTime: any = "",
   pageSize: number = 20,
   keyword: string = "",
-  authorKeyword: string = ""
+  authorKeyword: string = "",
+  date: string = ""
 ): Promise<{ items: HistoryItem[]; hasMore: boolean }> => {
   const db = await openDB();
   const tx = db.transaction("history", "readonly");
@@ -98,7 +115,7 @@ export const getHistory = async (
 
         // 如果还没收集够数据，继续收集
         if (items.length < pageSize) {
-          if (matchCondition(value, keyword, authorKeyword)) {
+          if (matchCondition(value, keyword, authorKeyword, date)) {
             items.push(value);
           }
           cursor.continue();

@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "tsc -b && vite build --watch && cpx manifest.json dist && cpx \"icons/**/*\" dist/icons && cpx \"src/popup/index.html\" dist/popup && cpx \"src/history/index.html\" dist/history && cpx \"src/about/index.html\" dist/about",
-    "build": "rimraf dist && tsc -b && vite build && cpx manifest.json dist && cpx \"icons/**/*\" dist/icons && cpx \"src/popup/index.html\" dist/popup && cpx \"src/history/index.html\" dist/history && cpx \"src/about/index.html\" dist/about && rimraf dist/src",
+    "build": "rimraf dist && tsc -b && vite build && cpx manifest.json dist && cpx \"icons/**/*\" dist/icons && cpx \"src/popup/index.html\" dist/popup && cpx \"src/history/index.html\" dist/history && cpx \"src/about/index.html\" dist/about && rimraf dist/src && rimraf dist/vite.svg",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@types/chrome": "^0.0.315",
+    "dayjs": "^1.11.13",
     "lucide-react": "^0.503.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
